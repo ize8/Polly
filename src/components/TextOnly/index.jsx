@@ -5,11 +5,11 @@ export const TextOnly = ({ domNode }) => {
   return (
     <Paper
       style={{
-        padding: "5px",
         fontSize: "1.3rem",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center"
+        alignItems: "center",
+        width: "100%"
       }}
       variant="outlined"
       square

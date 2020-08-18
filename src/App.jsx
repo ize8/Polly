@@ -1,30 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
+import { CssBaseline } from "@material-ui/core";
 import { DragList } from "./components/DragList";
 import { StarRating } from "./components/StarRating";
 import { TextOnly } from "./components/TextOnly";
 import { FreeTextFeedback } from "./components/FreeTextFeedback";
 import { nanoid } from "nanoid";
 
-/*
-.dark-primary-color    { background: #455A64; }
-.default-primary-color { background: #607D8B; }
-.light-primary-color   { background: #CFD8DC; }
-.text-primary-color    { color: #FFFFFF; }
-.accent-color          { background: #FF9800; }
-.primary-text-color    { color: #212121; }
-.secondary-text-color  { color: #757575; }
-.divider-color         { border-color: #BDBDBD; }
-*/
-
 const theme = createMuiTheme({
   palette: {
-    background: {
-      paper: "#757575"
-    },
-    text: {
-      primary: "#E0E0E0"
-    }
+    type: "dark"
   }
 });
 
@@ -36,7 +21,7 @@ const template = [
         <span
           style={{
             height: "150px",
-            width: "93%",
+            width: "100%",
             border: "10px dotted red",
             backgroundColor: "salmon",
             display: "flex",
@@ -104,6 +89,7 @@ export const App = () => {
 
   return (
     <MuiThemeProvider theme={theme}>
+      <CssBaseline />
       <div
         style={{
           display: "flex",
