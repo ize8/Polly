@@ -1,17 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
-import { CssBaseline } from "@material-ui/core";
 import { DragList } from "./components/DragList";
 import { StarRating } from "./components/StarRating";
 import { TextOnly } from "./components/TextOnly";
 import { FreeTextFeedback } from "./components/FreeTextFeedback";
 import { nanoid } from "nanoid";
-
-const theme = createMuiTheme({
-  palette: {
-    type: "dark"
-  }
-});
 
 const template = [
   {
@@ -46,7 +38,13 @@ const template = [
   },
   {
     type: "TextOnly",
-    props: { domNode: <p>Csirkek az udvaron udvarolnak....</p> }
+    props: {
+      domNode: (
+        <p style={{ paddingLeft: "10px", paddingRight: "10px" }}>
+          Csirkek az udvaron udvarolnak....
+        </p>
+      )
+    }
   },
   {
     type: "FreeTextFeedback",
@@ -59,19 +57,6 @@ const template = [
 ];
 
 export const App = () => {
-  const getWidgetDom = (type, props) => {
-    switch (type) {
-      case "TextOnly":
-        return <TextOnly {...props} />;
-      case "StarRating":
-        return <StarRating {...props} />;
-      case "FreeTextFeedback":
-        return <FreeTextFeedback {...props} />;
-      default:
-        return <></>;
-    }
-  };
-
   const [items, setItems] = useState(
     template.map((e) => {
       const id = nanoid(5);
@@ -87,22 +72,42 @@ export const App = () => {
     if (!items) return;
   }, [items]);
 
+  const getWidgetDom = (type, props) => {
+    switch (type) {
+      case "TextOnly":
+        return <TextOnly {...props} />;
+      case "StarRating":
+        return <StarRating {...props} />;
+      case "FreeTextFeedback":
+        return <FreeTextFeedback {...props} />;
+      default:
+        return <></>;
+    }
+  };
+
+  const removeWidget = (id) => {
+    console.log("Remove widget id:", id);
+  };
+
+  const selectWidget = (id) => {
+    console.log("Select widget id:", id);
+  };
+
   return (
-    <MuiThemeProvider theme={theme}>
-      <CssBaseline />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          paddingLeft: "50px"
-        }}
-      >
-        <DragList
-          widgetList={items}
-          setWidgetList={setItems}
-          getWidgetDom={getWidgetDom}
-        />
-      </div>
-    </MuiThemeProvider>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        paddingLeft: "50px"
+      }}
+    >
+      <DragList
+        widgetList={items}
+        setWidgetList={setItems}
+        getWidgetDom={getWidgetDom}
+        selectWidget={selectWidget}
+        removeWidget={removeWidget}
+      />
+    </div>
   );
 };

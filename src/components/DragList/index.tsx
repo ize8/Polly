@@ -4,6 +4,8 @@ import { motion, useMotionValue } from "framer-motion";
 import { findIndex, Position } from "./find-index";
 import move from "array-move";
 
+import { Settings, Delete } from "@material-ui/icons";
+
 const Item = ({
   setPosition,
   moveItem,
@@ -12,7 +14,9 @@ const Item = ({
   style,
   dragEnd,
   id,
-  updateProps
+  updateProps,
+  selectWidget,
+  removeWidget
 }) => {
   const [isDragging, setDragging] = useState(false);
 
@@ -36,51 +40,86 @@ const Item = ({
 
   const itemStyle = {
     padding: "5px",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    zIndex: isDragging ? 5 : 0
   };
 
   return (
-    <motion.li
-      ref={ref}
-      initial={false}
-      // If we're dragging, we want to set the zIndex of that item to be on top of the other items.
-      animate={isDragging ? onTop : flat}
-      style={{ ...itemStyle, ...children.style }}
-      whileHover={{ backgroundColor: "rgb(255, 215, 0)", cursor: "pointer" }}
-      whileTap={{ backgroundColor: "rgb(255, 215, 0)", cursor: "grab" }}
-      drag="y"
-      dragOriginY={dragOriginY}
-      dragConstraints={{ top: 0, bottom: 0 }}
-      dragElastic={1}
-      onDragStart={() => setDragging(true)}
-      onDragEnd={() => {
-        setDragging(false);
-        dragEnd();
-      }}
-      onDrag={(e, { point }) => moveItem(i, point.y)}
-      positionTransition={({ delta }) => {
-        if (isDragging) {
-          // If we're dragging, we want to "undo" the items movement within the list
-          // by manipulating its dragOriginY. This will keep the item under the cursor,
-          // even though it's jumping around the DOM.
-          dragOriginY.set(dragOriginY.get() + delta.y);
-        }
+    <>
+      <motion.li
+        ref={ref}
+        initial={false}
+        // If we're dragging, we want to set the zIndex of that item to be on top of the other items.
+        style={{ ...itemStyle, ...children.style }}
+        drag="y"
+        dragOriginY={dragOriginY}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={1}
+        onDragStart={() => setDragging(true)}
+        onDragEnd={() => {
+          setDragging(false);
+          dragEnd();
+        }}
+        onDrag={(e, { point }) => moveItem(i, point.y)}
+        positionTransition={({ delta }) => {
+          if (isDragging) {
+            // If we're dragging, we want to "undo" the items movement within the list
+            // by manipulating its dragOriginY. This will keep the item under the cursor,
+            // even though it's jumping around the DOM.
+            dragOriginY.set(dragOriginY.get() + delta.y);
+          }
 
-        // If `positionTransition` is a function and returns `false`, it's telling
-        // Motion not to animate from its old position into its new one. If we're
-        // dragging, we don't want any animation to occur.
-        return !isDragging;
-      }}
-    >
-      {{
-        ...children,
-        props: { ...children.props, updateProps: updateProps, id: id }
-      }}
-    </motion.li>
+          // If `positionTransition` is a function and returns `false`, it's telling
+          // Motion not to animate from its old position into its new one. If we're
+          // dragging, we don't want any animation to occur.
+          return !isDragging;
+        }}
+      >
+        <motion.div
+          whileHover={{ scale: 1.5, rotate: 30, color: "rgb(150,250,150)" }}
+        >
+          <Settings
+            onClick={() => selectWidget(id)}
+            style={{ marginRight: "10px", cursor: "pointer" }}
+          />
+        </motion.div>
+        <motion.div
+          style={{ width: "100%" }}
+          animate={isDragging ? onTop : flat}
+          whileHover={{
+            border: "0px solid rgb(255, 215, 0)",
+            cursor: "pointer"
+          }}
+          whileTap={{ border: "5px solid rgb(255, 215, 0)", cursor: "grab" }}
+        >
+          {{
+            ...children,
+            props: { ...children.props, updateProps: updateProps, id: id }
+          }}
+        </motion.div>
+        <motion.div
+          whileHover={{ scale: 1.5, rotate: 30, color: "rgb(255,0,0)" }}
+        >
+          <Delete
+            onClick={() => removeWidget(id)}
+            style={{ marginLeft: "10px", cursor: "pointer" }}
+          />
+        </motion.div>
+      </motion.li>
+    </>
   );
 };
 
-export const DragList = ({ widgetList, setWidgetList, getWidgetDom }) => {
+export const DragList = ({
+  widgetList,
+  setWidgetList,
+  getWidgetDom,
+  selectWidget,
+  removeWidget
+}) => {
   const containerRef = useRef();
   const [items, setItems] = useState(widgetList);
 
@@ -135,6 +174,8 @@ export const DragList = ({ widgetList, setWidgetList, getWidgetDom }) => {
           id={item.id}
           i={i}
           updateProps={updateProps}
+          selectWidget={selectWidget}
+          removeWidget={removeWidget}
           setPosition={setPosition}
           moveItem={moveItem}
           children={getWidgetDom(item.type, item.props)}
@@ -150,6 +191,7 @@ export const DragList = ({ widgetList, setWidgetList, getWidgetDom }) => {
 // Spring configs
 const onTop = { zIndex: 1, scale: 1.05, boxShadow: "3px 3px 8px black" };
 const flat = {
+  border: "0px solid rgb(0,0,0)",
   zIndex: 0,
   scale: 1,
   boxShadow: "0px 0px 0px black",
