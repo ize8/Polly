@@ -93,6 +93,10 @@ export const App = () => {
     console.log("Select widget id:", id);
   };
 
+  const insertWidget = (id) => {
+    console.log("Insert widget id:", id);
+  };
+
   return (
     <div
       style={{
@@ -107,6 +111,7 @@ export const App = () => {
         getWidgetDom={getWidgetDom}
         selectWidget={selectWidget}
         removeWidget={removeWidget}
+        insertWidget={insertWidget}
       />
     </div>
   );

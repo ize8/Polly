@@ -4,7 +4,7 @@ import { motion, useMotionValue } from "framer-motion";
 import { findIndex, Position } from "./find-index";
 import move from "array-move";
 
-import { Settings, Delete } from "@material-ui/icons";
+import { Settings, Delete, Add } from "@material-ui/icons";
 
 const Item = ({
   setPosition,
@@ -16,7 +16,8 @@ const Item = ({
   id,
   updateProps,
   selectWidget,
-  removeWidget
+  removeWidget,
+  insertWidget
 }) => {
   const [isDragging, setDragging] = useState(false);
 
@@ -42,7 +43,7 @@ const Item = ({
     padding: "5px",
     boxSizing: "border-box",
     display: "flex",
-    alignItems: "center",
+    alignItems: "stretch",
     justifyContent: "space-between",
     zIndex: isDragging ? 5 : 0
   };
@@ -78,36 +79,62 @@ const Item = ({
           return !isDragging;
         }}
       >
-        <motion.div
-          whileHover={{ scale: 1.5, rotate: 30, color: "rgb(150,250,150)" }}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            marginRight: "10px"
+          }}
         >
-          <Settings
-            onClick={() => selectWidget(id)}
-            style={{ marginRight: "10px", cursor: "pointer" }}
-          />
-        </motion.div>
+          <motion.div
+            animate={isDragging ? { scale: 0 } : { scale: 1 }}
+            whileHover={{ scale: 1.5, rotate: 30, color: "rgb(96,125,189)" }}
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            <Settings
+              onClick={() => selectWidget(id)}
+              style={{ cursor: "pointer" }}
+            />
+          </motion.div>
+        </div>
         <motion.div
           style={{ width: "100%" }}
           animate={isDragging ? onTop : flat}
-          whileHover={{
-            border: "0px solid rgb(255, 215, 0)",
-            cursor: "pointer"
-          }}
-          whileTap={{ border: "5px solid rgb(255, 215, 0)", cursor: "grab" }}
         >
           {{
             ...children,
             props: { ...children.props, updateProps: updateProps, id: id }
           }}
         </motion.div>
-        <motion.div
-          whileHover={{ scale: 1.5, rotate: 30, color: "rgb(255,0,0)" }}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-around",
+            alignItems: "center",
+            marginLeft: "5px"
+          }}
         >
-          <Delete
-            onClick={() => removeWidget(id)}
-            style={{ marginLeft: "10px", cursor: "pointer" }}
-          />
-        </motion.div>
+          <motion.div
+            animate={isDragging ? { scale: 0 } : { scale: 1 }}
+            whileHover={{ scale: 1.5, rotate: 30, color: "rgb(255,0,0)" }}
+          >
+            <Delete
+              onClick={() => removeWidget(id)}
+              style={{ cursor: "pointer" }}
+            />
+          </motion.div>
+          <motion.div
+            animate={isDragging ? { scale: 0 } : { scale: 1 }}
+            whileHover={{ scale: 2, translateY: 10, color: "rgb(0,255,0)" }}
+          >
+            <Add
+              onClick={() => insertWidget(id)}
+              style={{ marginLeft: "10px", cursor: "pointer" }}
+            />
+          </motion.div>
+        </div>
       </motion.li>
     </>
   );
@@ -118,7 +145,8 @@ export const DragList = ({
   setWidgetList,
   getWidgetDom,
   selectWidget,
-  removeWidget
+  removeWidget,
+  insertWidget
 }) => {
   const containerRef = useRef();
   const [items, setItems] = useState(widgetList);
@@ -176,6 +204,7 @@ export const DragList = ({
           updateProps={updateProps}
           selectWidget={selectWidget}
           removeWidget={removeWidget}
+          insertWidget={insertWidget}
           setPosition={setPosition}
           moveItem={moveItem}
           children={getWidgetDom(item.type, item.props)}
@@ -189,11 +218,18 @@ export const DragList = ({
 };
 
 // Spring configs
-const onTop = { zIndex: 1, scale: 1.05, boxShadow: "3px 3px 8px black" };
+const onTop = {
+  zIndex: 1,
+  scale: 1.05,
+  boxShadow: "3px 3px 8px black",
+  cursor: "grab",
+  border: "0px solid rgb(255,255,0)"
+};
 const flat = {
-  border: "0px solid rgb(0,0,0)",
+  cursor: "pointer",
   zIndex: 0,
   scale: 1,
   boxShadow: "0px 0px 0px black",
+  border: "0px solid rgb(255,255,0)",
   transition: { delay: 0.1 }
 };
