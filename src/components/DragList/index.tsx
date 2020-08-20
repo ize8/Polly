@@ -112,7 +112,7 @@ const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
             style={{ display: "flex", alignItems: "center" }}
           >
             <Settings
-              onClick={() => selectWidget(id)}
+              onClick={() => selectWidget(iAmSelected ? null : id)}
               style={{
                 cursor: "pointer"
               }}
