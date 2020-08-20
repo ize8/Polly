@@ -2,7 +2,7 @@ import React from "react";
 import { Paper } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
 
-export const StarRating = ({ text, max, value, id, updateProps }) => {
+export const StarRating = ({ text, max, value, updateProps }) => {
   return (
     <Paper
       style={{
@@ -20,7 +20,7 @@ export const StarRating = ({ text, max, value, id, updateProps }) => {
         value={value}
         max={max}
         onChange={(event, newValue) => {
-          updateProps(id, { value: newValue });
+          updateProps({ value: newValue });
         }}
       />
       <span style={{ fontWeight: "bold" }}>{`${value || "0"}/${max}`}</span>

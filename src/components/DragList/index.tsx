@@ -1,24 +1,25 @@
 import * as React from "react";
 import { useEffect, useState, useRef } from "react";
-import { motion, useMotionValue } from "framer-motion";
+import { motion, useMotionValue, AnimatePresence } from "framer-motion";
 import { findIndex, Position } from "./find-index";
 import move from "array-move";
 
-import { Settings, Delete, Add } from "@material-ui/icons";
+import {
+  WidgetListContext,
+  WidgetListProvider
+} from "../../Context/WidgetListProvider";
 
-const Item = ({
-  setPosition,
-  moveItem,
-  i,
-  children,
-  style,
-  dragEnd,
-  id,
-  updateProps,
-  selectWidget,
-  removeWidget,
-  insertWidget
-}) => {
+import { Settings, Delete, Add, Forward } from "@material-ui/icons";
+
+const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
+  const {
+    removeWidget,
+    selectWidget,
+    insertWidget,
+    updateWidget,
+    selectedId
+  } = React.useContext(WidgetListContext);
+  const iAmSelected = selectedId === id;
   const [isDragging, setDragging] = useState(false);
 
   // We'll use a `ref` to access the DOM element that the `motion.li` produces.
@@ -48,11 +49,29 @@ const Item = ({
     zIndex: isDragging ? 5 : 0
   };
 
+  // Spring configs
+  const onTop = {
+    zIndex: 1,
+    scale: 1.05,
+    boxShadow: "3px 3px 8px black",
+    cursor: "grab",
+    transition: { delay: 0.1 }
+  };
+  const flat = {
+    cursor: "pointer",
+    zIndex: 0,
+    scale: 1,
+    boxShadow: "0px 0px 0px black",
+    transition: { delay: 0.1 }
+  };
+
   return (
     <>
       <motion.li
         ref={ref}
-        initial={false}
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, scaleY: 0 }}
         // If we're dragging, we want to set the zIndex of that item to be on top of the other items.
         style={{ ...itemStyle, ...children.style }}
         drag="y"
@@ -89,22 +108,27 @@ const Item = ({
         >
           <motion.div
             animate={isDragging ? { scale: 0 } : { scale: 1 }}
-            whileHover={{ scale: 1.5, rotate: 30, color: "rgb(96,125,189)" }}
+            whileHover={{ scale: 1.5, rotate: 45, color: "rgb(96,125,189)" }}
             style={{ display: "flex", alignItems: "center" }}
           >
             <Settings
               onClick={() => selectWidget(id)}
-              style={{ cursor: "pointer" }}
+              style={{
+                cursor: "pointer"
+              }}
             />
           </motion.div>
         </div>
         <motion.div
-          style={{ width: "100%" }}
+          style={{
+            width: "100%",
+            border: iAmSelected ? "3px solid gold" : null
+          }}
           animate={isDragging ? onTop : flat}
         >
           {{
             ...children,
-            props: { ...children.props, updateProps: updateProps, id: id }
+            props: { ...children.props, updateProps: updateWidget(id), id: id }
           }}
         </motion.div>
         <div
@@ -140,15 +164,11 @@ const Item = ({
   );
 };
 
-export const DragList = ({
-  widgetList,
-  setWidgetList,
-  getWidgetDom,
-  selectWidget,
-  removeWidget,
-  insertWidget
-}) => {
+const List = () => {
   const containerRef = useRef();
+  const { widgetList, setWidgetList, getWidgetDom } = React.useContext(
+    WidgetListContext
+  );
   const [items, setItems] = useState(widgetList);
 
   // We need to collect an array of height and position data for all of this component's
@@ -186,50 +206,31 @@ export const DragList = ({
     return false;
   };
 
-  const updateProps = (id, newProps) => {
-    const newList = widgetList.map((e) => {
-      if (e.id === id) return { ...e, props: { ...e.props, ...newProps } };
-      return e;
-    });
-    setWidgetList(newList);
-  };
-
   return (
     <ul style={containerStyle} ref={containerRef}>
-      {items?.map((item, i) => (
-        <Item
-          key={item.id}
-          id={item.id}
-          i={i}
-          updateProps={updateProps}
-          selectWidget={selectWidget}
-          removeWidget={removeWidget}
-          insertWidget={insertWidget}
-          setPosition={setPosition}
-          moveItem={moveItem}
-          children={getWidgetDom(item.type, item.props)}
-          dragEnd={() => {
-            if (orderChanged()) setWidgetList(items);
-          }}
-        />
-      ))}
+      <AnimatePresence>
+        {items?.map((item, i) => (
+          <Item
+            key={item.id}
+            id={item.id}
+            i={i}
+            setPosition={setPosition}
+            moveItem={moveItem}
+            children={getWidgetDom(item.type, item.props)}
+            dragEnd={() => {
+              if (orderChanged()) setWidgetList(items);
+            }}
+          />
+        ))}
+      </AnimatePresence>
     </ul>
   );
 };
 
-// Spring configs
-const onTop = {
-  zIndex: 1,
-  scale: 1.05,
-  boxShadow: "3px 3px 8px black",
-  cursor: "grab",
-  border: "0px solid rgb(255,255,0)"
-};
-const flat = {
-  cursor: "pointer",
-  zIndex: 0,
-  scale: 1,
-  boxShadow: "0px 0px 0px black",
-  border: "0px solid rgb(255,255,0)",
-  transition: { delay: 0.1 }
+export const DragList = () => {
+  return (
+    <WidgetListProvider>
+      <List />
+    </WidgetListProvider>
+  );
 };

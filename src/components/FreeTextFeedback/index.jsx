@@ -1,13 +1,7 @@
 import React from "react";
 import { Paper, TextField } from "@material-ui/core";
 
-export const FreeTextFeedback = ({
-  text,
-  value,
-  updateProps,
-  id,
-  rows = 3
-}) => {
+export const FreeTextFeedback = ({ text, value, updateProps, rows = 3 }) => {
   return (
     <Paper
       style={{
@@ -28,7 +22,7 @@ export const FreeTextFeedback = ({
         variant="outlined"
         value={value}
         onChange={(event) => {
-          updateProps(id, { value: event.target.value });
+          updateProps({ value: event.target.value });
         }}
       />
     </Paper>
