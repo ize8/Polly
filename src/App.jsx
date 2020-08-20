@@ -1,5 +1,6 @@
 import React from "react";
 import { DragList } from "./components/DragList";
+import { WidgetListProvider } from "./Context/WidgetListProvider";
 
 export const App = () => {
   return (
@@ -10,7 +11,9 @@ export const App = () => {
         paddingLeft: "50px"
       }}
     >
-      <DragList />
+      <WidgetListProvider>
+        <DragList />
+      </WidgetListProvider>
     </div>
   );
 };

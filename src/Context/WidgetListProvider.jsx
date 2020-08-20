@@ -71,6 +71,7 @@ const getWidgetDom = (type, props) => {
 export const WidgetListContext = React.createContext();
 
 export const WidgetListProvider = (props) => {
+  const [selectedId, setSelectedId] = useState(null);
   const [items, setItems] = useState(
     template.map((e) => {
       const id = nanoid(5);
@@ -81,8 +82,6 @@ export const WidgetListProvider = (props) => {
       };
     })
   );
-
-  const [selectedId, setSelectedId] = useState(null);
 
   const updateWidget = (id) => (newProps) => {
     const newList = items.map((e) => {

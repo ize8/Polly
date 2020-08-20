@@ -164,7 +164,7 @@ const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
   );
 };
 
-const List = () => {
+export const DragList = () => {
   const containerRef = useRef();
   const { widgetList, setWidgetList, getWidgetDom } = React.useContext(
     WidgetListContext
@@ -224,13 +224,5 @@ const List = () => {
         ))}
       </AnimatePresence>
     </ul>
-  );
-};
-
-export const DragList = () => {
-  return (
-    <WidgetListProvider>
-      <List />
-    </WidgetListProvider>
   );
 };
