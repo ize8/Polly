@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "react-dom";
-import { App } from "./App";
+import { Editor } from "./Editor";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import { CssBaseline } from "@material-ui/core";
 import "./style.css";
@@ -14,7 +14,7 @@ const theme = createMuiTheme({
 render(
   <MuiThemeProvider theme={theme}>
     <CssBaseline />
-    <App />
+    <Editor />
   </MuiThemeProvider>,
   document.getElementById("root")
 );
