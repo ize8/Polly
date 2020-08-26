@@ -1,7 +1,12 @@
 import React from "react";
 import { Paper, TextField } from "@material-ui/core";
+import { WidgetListContext } from "../../Context/WidgetListProvider";
 
-export const FreeTextFeedback = ({ text, value, updateProps, rows = 3 }) => {
+export const FreeTextFeedback = ({ text, value, rows = 3, id }) => {
+  const { updateWidget } = React.useContext(WidgetListContext);
+  const onChange = (event) => {
+    updateWidget(id)({ value: event.target.value });
+  };
   return (
     <Paper
       style={{
@@ -21,9 +26,7 @@ export const FreeTextFeedback = ({ text, value, updateProps, rows = 3 }) => {
         rows={rows}
         variant="outlined"
         value={value}
-        onChange={(event) => {
-          updateProps({ value: event.target.value });
-        }}
+        onChange={onChange}
       />
     </Paper>
   );

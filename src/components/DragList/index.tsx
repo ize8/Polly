@@ -4,22 +4,19 @@ import { motion, useMotionValue, AnimatePresence } from "framer-motion";
 import { findIndex, Position } from "./find-index";
 import move from "array-move";
 
-import {
-  WidgetListContext,
-  WidgetListProvider
-} from "../../Context/WidgetListProvider";
+import { WidgetListContext } from "../../Context/WidgetListProvider";
 
-import { Settings, Delete, Add, Forward } from "@material-ui/icons";
+import { Settings, Delete, Add } from "@material-ui/icons";
 
-const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
+const Item = ({ setPosition, moveItem, i, dragEnd, widget, widgetToAdd }) => {
   const {
     removeWidget,
     selectWidget,
     insertWidget,
-    updateWidget,
+    getWidgetDom,
     selectedId
   } = React.useContext(WidgetListContext);
-  const iAmSelected = selectedId === id;
+  const iAmSelected = selectedId === widget.id;
   const [isDragging, setDragging] = useState(false);
 
   // We'll use a `ref` to access the DOM element that the `motion.li` produces.
@@ -44,7 +41,6 @@ const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
     padding: "5px",
     boxSizing: "border-box",
     display: "flex",
-    alignItems: "stretch",
     justifyContent: "space-between",
     zIndex: isDragging ? 5 : 0
   };
@@ -54,15 +50,13 @@ const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
     zIndex: 1,
     scale: 1.05,
     boxShadow: "3px 3px 8px black",
-    cursor: "grab",
-    transition: { delay: 0.1 }
+    cursor: "grab"
   };
   const flat = {
     cursor: "pointer",
     zIndex: 0,
     scale: 1,
-    boxShadow: "0px 0px 0px black",
-    transition: { delay: 0.1 }
+    boxShadow: "0px 0px 0px black"
   };
 
   return (
@@ -71,9 +65,9 @@ const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
         ref={ref}
         initial={{ height: 0, opacity: 0 }}
         animate={{ height: "auto", opacity: 1 }}
-        exit={{ height: 0, scaleY: 0 }}
+        exit={{ height: 0, scaleY: 0, opacity: 0 }}
         // If we're dragging, we want to set the zIndex of that item to be on top of the other items.
-        style={{ ...itemStyle, ...children.style }}
+        style={itemStyle}
         drag="y"
         dragOriginY={dragOriginY}
         dragConstraints={{ top: 0, bottom: 0 }}
@@ -112,7 +106,7 @@ const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
             style={{ display: "flex", alignItems: "center" }}
           >
             <Settings
-              onClick={() => selectWidget(iAmSelected ? null : id)}
+              onClick={() => selectWidget(iAmSelected ? null : widget.id)}
               style={{
                 cursor: "pointer"
               }}
@@ -126,10 +120,10 @@ const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
           }}
           animate={isDragging ? onTop : flat}
         >
-          {{
-            ...children,
-            props: { ...children.props, updateProps: updateWidget(id), id: id }
-          }}
+          {getWidgetDom(widget.type, {
+            ...widget.props,
+            id: widget.id
+          })}
         </motion.div>
         <div
           style={{
@@ -140,35 +134,43 @@ const Item = ({ setPosition, moveItem, i, children, style, dragEnd, id }) => {
             marginLeft: "5px"
           }}
         >
-          <motion.div
-            animate={isDragging ? { scale: 0 } : { scale: 1 }}
-            whileHover={{ scale: 1.5, rotate: 30, color: "rgb(255,0,0)" }}
-          >
-            <Delete
-              onClick={() => removeWidget(id)}
-              style={{ cursor: "pointer" }}
-            />
-          </motion.div>
-          <motion.div
-            animate={isDragging ? { scale: 0 } : { scale: 1 }}
-            whileHover={{ scale: 2, translateY: 10, color: "rgb(0,255,0)" }}
-          >
-            <Add
-              onClick={() => insertWidget(id)}
-              style={{ marginLeft: "10px", cursor: "pointer" }}
-            />
-          </motion.div>
+          <AnimatePresence>
+            <motion.div
+              key="0"
+              layoutTransition
+              animate={isDragging ? { scale: 0 } : { scale: 1 }}
+              whileHover={{ scale: 1.5, rotate: 30, color: "rgb(255,0,0)" }}
+            >
+              <Delete
+                onClick={() => removeWidget(widget.id)}
+                style={{ cursor: "pointer" }}
+              />
+            </motion.div>
+            {widgetToAdd && (
+              <motion.div
+                key="1"
+                layoutTransition
+                initial={{ scale: 0 }}
+                animate={isDragging ? { scale: 0 } : { scale: 1 }}
+                exit={{ scale: 0 }}
+                whileHover={{ scale: 2, translateY: 10, color: "rgb(0,255,0)" }}
+              >
+                <Add
+                  onClick={() => insertWidget(widget.id)(widgetToAdd)}
+                  style={{ cursor: "pointer" }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.li>
     </>
   );
 };
 
-export const DragList = () => {
+export const DragList = ({ widgetToAdd }) => {
   const containerRef = useRef();
-  const { widgetList, setWidgetList, getWidgetDom } = React.useContext(
-    WidgetListContext
-  );
+  const { widgetList, setWidgetList } = React.useContext(WidgetListContext);
   const [items, setItems] = useState(widgetList);
 
   // We need to collect an array of height and position data for all of this component's
@@ -206,22 +208,26 @@ export const DragList = () => {
     return false;
   };
 
+  //console.log(`%c==============NEW RENDER===================`, "color:red");
   return (
     <ul style={containerStyle} ref={containerRef}>
       <AnimatePresence>
-        {items?.map((item, i) => (
-          <Item
-            key={item.id}
-            id={item.id}
-            i={i}
-            setPosition={setPosition}
-            moveItem={moveItem}
-            children={getWidgetDom(item.type, item.props)}
-            dragEnd={() => {
-              if (orderChanged()) setWidgetList(items);
-            }}
-          />
-        ))}
+        {items?.map((item, i) => {
+          //console.log(item);
+          return (
+            <Item
+              key={item.id}
+              i={i}
+              widgetToAdd={widgetToAdd}
+              setPosition={setPosition}
+              moveItem={moveItem}
+              widget={item}
+              dragEnd={() => {
+                if (orderChanged()) setWidgetList(items);
+              }}
+            />
+          );
+        })}
       </AnimatePresence>
     </ul>
   );

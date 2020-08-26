@@ -55,7 +55,7 @@ const template = [
   }
 ];
 
-const getWidgetDom = (type, props) => {
+export const getWidgetDom = (type, props) => {
   switch (type) {
     case "TextOnly":
       return <TextOnly {...props} />;
@@ -101,15 +101,14 @@ export const WidgetListProvider = (props) => {
     setSelectedId(id);
   };
 
-  const insertWidget = (id) => {
-    console.log("Insert widget id:", id);
+  const insertWidget = (id) => (widget) => {
+    console.log("Insert after widget id:", id, widget);
     const index = items.findIndex((e) => e.id === id);
+    const newId = nanoid(5);
     const newWidget = {
-      id: nanoid(5),
-      type: "TextOnly",
-      props: {
-        domNode: <p>You just added me!</p>
-      }
+      id: newId,
+      type: widget.type,
+      props: widget.props
     };
     setItems([
       ...items.slice(0, index + 1),
